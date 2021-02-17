@@ -21,6 +21,8 @@ from lasagne.layers import batch_norm
 import os.path
 from os import path
 
+import sys
+
 # Logging utilities - logs get saved in folder logs named by date and time, and also output
 # at standard output
 
@@ -102,9 +104,15 @@ class DCJC(object):
         Z = np.zeros((dataset.input.shape[0], self.encode_size), dtype=theano.config.floatX)
         # in case we're continuing training load the network params
         if continue_training:
-            with np.load('saved_params/%s/m_%s.npz' % (dataset.name, self.name)) as f:
-                param_values = [f['arr_%d' % i] for i in range(len(f.files))]
-                lasagne.layers.set_all_param_values(self.network, param_values, trainable=True)
+            try:
+                with np.load('saved_params/%s/m_%s.npz' % (dataset.name, self.name)) as f:
+                    param_values = [f['arr_%d' % i] for i in range(len(f.files))]
+                    lasagne.layers.set_all_param_values(self.network, param_values, trainable=True)
+            except IOError as e:
+                rootLogger.error('ERROR: Cannot continue training because files for previous training are not where '
+                                 'they are expected', exc_info=e)
+                sys.exit(1)
+
         for epoch in range(epochs):
             error = 0
             total_batches = 0
