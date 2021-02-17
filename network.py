@@ -99,7 +99,7 @@ class DCJC(object):
         '''
         batch_size = self.batch_size
         # array for holding the latent space representation of input
-        Z = np.zeros((dataset.input.shape[0], self.encode_size), dtype=np.float32);
+        Z = np.zeros((dataset.input.shape[0], self.encode_size), dtype=theano.config.floatX)
         # in case we're continuing training load the network params
         if continue_training:
             with np.load('saved_params/%s/m_%s.npz' % (dataset.name, self.name)) as f:
@@ -201,7 +201,7 @@ class DCJC(object):
             trainFunction = theano.function([self.t_input, P], clustering_loss, updates=updates)
         for epoch in range(epochs):
             # Get the current distribution
-            qij = np.zeros((dataset.input.shape[0], dataset.getClusterCount()), dtype=np.float32)
+            qij = np.zeros((dataset.input.shape[0], dataset.getClusterCount()), dtype=theano.config.floatX)
             for i, batch in enumerate(dataset.iterate_minibatches(self.input_type, batch_size, shuffle=False)):
                 qij[i * batch_size: (i + 1) * batch_size] = getSoftAssignments(batch[0])
             # Calculate the desired distribution
