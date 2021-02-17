@@ -9,7 +9,7 @@ from copy import deepcopy
 import argparse
 
 
-def testOnlyClusterInitialization(dataset_name, arch, epochs):
+def testOnlyClusterInitialization(dataset_name, arch, epochs, continue_training=False):
     '''
     Train an autoencoder defined by architecture arch and trains it with the dataset defined
     :param dataset_name: Name of the dataset with which the network will be trained [MNIST, COIL20]
@@ -26,7 +26,7 @@ def testOnlyClusterInitialization(dataset_name, arch, epochs):
     dcjc = DCJC(arch_copy)
     rootLogger.info("Done creating network")
     rootLogger.info("Starting training")
-    dcjc.pretrainWithData(dataset, epochs, False);
+    dcjc.pretrainWithData(dataset, epochs, continue_training)
 
 
 def testOnlyClusterImprovement(dataset_name, arch, epochs, method):
@@ -108,7 +108,7 @@ def visualizeLatentSpace(dataset_name, arch):
 if __name__ == '__main__':
     '''
     usage: main.py [-h] -d DATASET -a ARCHITECTURE [--pretrain PRETRAIN]
-               [--cluster CLUSTER] [--metrics METRICS] [--visualize VISUALIZE]
+               [--cluster CLUSTER] [--metrics METRICS] [--visualize VISUALIZE] [-- continue_pretraining]
         
     required arguments:
       -d DATASET, --dataset DATASET
@@ -131,6 +131,9 @@ if __name__ == '__main__':
                             Visualize the image space and latent space, assumes
                             pretraining and cluster based training have been
                             performed
+                            
+      -c , --continue_pretraining  
+                            Continue Pretraining from saved network params
     '''
     # Load architectures from the json files
     mnist_archs = []
@@ -148,6 +151,7 @@ if __name__ == '__main__':
     parser.add_argument("--cluster", type=int, help="Refine the autoencoder for specified #epochs with clustering loss, assumes that pretraining results are available")
     parser.add_argument("--metrics", action='store_true', help="Report k-means clustering metrics on the clustered latent space, assumes pretrain and cluster based training have been performed")
     parser.add_argument("--visualize", action='store_true', help="Visualize the image space and latent space, assumes pretraining and cluster based training have been performed")
+    parser.add_argument("-c", "--continue_pretraining",  action='store_true', default=False, help="Continue Pretraining from saved network params")
     args = parser.parse_args()
     # Train/Visualize as per the arguments
     dataset_name = args.dataset
@@ -157,7 +161,7 @@ if __name__ == '__main__':
     elif dataset_name == 'COIL20':
         archs = coil_archs
     if args.pretrain:
-        testOnlyClusterInitialization(dataset_name, archs[arch_index], args.pretrain)
+        testOnlyClusterInitialization(dataset_name, archs[arch_index], args.pretrain, continue_training=args.continue_pretraining)
     if args.cluster:
         testOnlyClusterImprovement(dataset_name, archs[arch_index], args.cluster, "KLD")
     if args.metrics:
