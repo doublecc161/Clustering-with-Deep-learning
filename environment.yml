@@ -1,0 +1,15 @@
+name: deepclustering_py27
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=2.7
+  - pip
+  - scikit-learn
+  - matplotlib
+  - numpy
+  - pillow
+  - mkl-service
+  - pip:
+      - 'https://github.com/Theano/Theano/archive/master.zip'
+      - 'https://github.com/Lasagne/Lasagne/archive/master.zip'
