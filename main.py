@@ -17,6 +17,7 @@ def testOnlyClusterInitialization(dataset_name, arch, epochs, continue_training=
     :param epochs: Number of train epochs
     :return: None - (side effect) saves the latent space and params of trained network in an appropriate location in saved_params folder
     '''
+    rootLogger.info("## Pretraining (Continue:%s) ##" % continue_training)
     arch_copy = deepcopy(arch)
     rootLogger.info("Loading dataset")
     dataset = DatasetHelper(dataset_name)
@@ -39,6 +40,7 @@ def testOnlyClusterImprovement(dataset_name, arch, epochs, method):
     :param method: Can be KM or KLD - depending on whether the clustering loss is KLDivergence loss between the current KMeans distribution(Q) and a more desired one(Q^2), or if the clustering loss is just the Kmeans loss
     :return: None - (side effect) saves latent space and params of the trained network
     '''
+    rootLogger.info("## Cluster Improvement with %s Loss ##" % method)
     arch_copy = deepcopy(arch)
     rootLogger.info("Loading dataset")
     dataset = DatasetHelper(dataset_name)
@@ -62,7 +64,7 @@ def testKMeans(dataset_name, archs):
     :param archs: Architectures as a dictionary
     :return: None - reports the accuracy and nmi clustering metrics
     '''
-    rootLogger.info('Initial Cluster Quality Comparison')
+    rootLogger.info('## Initial Cluster Quality Comparison ##')
     rootLogger.info(80 * '_')
     rootLogger.info('%-50s     %8s     %8s' % ('method', 'ACC', 'NMI'))
     rootLogger.info(80 * '_')
@@ -71,11 +73,11 @@ def testKMeans(dataset_name, archs):
     rootLogger.info(evaluateKMeans(dataset.input_flat, dataset.labels, dataset.getClusterCount(), 'image')[0])
     for arch in archs:
         Z = numpy.load('saved_params/' + dataset.name + '/z_' + arch['name'] + '.npy')
-        rootLogger.info(evaluateKMeans(Z, dataset.labels, dataset.getClusterCount(), arch['name'])[0])
+        rootLogger.info(evaluateKMeans(Z, dataset.labels, dataset.getClusterCount(), 'pretrain ' + arch['name'])[0])
         Z = numpy.load('saved_params/' + dataset.name + '/pc_z_' + arch['name'] + '.npy')
-        rootLogger.info(evaluateKMeans(Z, dataset.labels, dataset.getClusterCount(), arch['name'])[0])
+        rootLogger.info(evaluateKMeans(Z, dataset.labels, dataset.getClusterCount(), 'cluster kld ' + arch['name'])[0])
         Z = numpy.load('saved_params/' + dataset.name + '/pc_km_z_' + arch['name'] + '.npy')
-        rootLogger.info(evaluateKMeans(Z, dataset.labels, dataset.getClusterCount(), arch['name'])[0])
+        rootLogger.info(evaluateKMeans(Z, dataset.labels, dataset.getClusterCount(), 'cluster km ' + arch['name'])[0])
     rootLogger.info(80 * '_')
 
 
@@ -86,6 +88,7 @@ def visualizeLatentSpace(dataset_name, arch):
     :param arch: Architectures as a dictionary
     :return: None - (side effect) saved graphs in plots/ folder
     '''
+    rootLogger.info("## Visualizing Latent Space ##")
     rootLogger.info("Loading dataset")
     dataset = DatasetHelper(dataset_name)
     dataset.loadDataset()
@@ -163,7 +166,7 @@ if __name__ == '__main__':
     if args.pretrain:
         testOnlyClusterInitialization(dataset_name, archs[arch_index], args.pretrain, continue_training=args.continue_pretraining)
     if args.cluster:
-        testOnlyClusterImprovement(dataset_name, archs[arch_index], args.cluster, "KLD")
+        testOnlyClusterImprovement(dataset_name, archs[arch_index], args.cluster, "KLD")  # KM or KLD
     if args.metrics:
         testKMeans(dataset_name, [archs[arch_index]])
     if args.visualize:
