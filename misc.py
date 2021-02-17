@@ -188,7 +188,7 @@ def getClusterMetricString(method_name, labels_true, labels_pred):
     :return: Formatted string containing metrics and method name
     '''
     acc = cluster_acc(labels_true, labels_pred)
-    nmi = metrics.normalized_mutual_info_score(labels_true, labels_pred)
+    nmi = metrics.normalized_mutual_info_score(labels_true, labels_pred, average_method='geometric')
     return '%-50s     %8.3f     %8.3f' % (method_name, acc, nmi)
 
 
