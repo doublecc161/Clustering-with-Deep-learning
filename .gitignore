@@ -5,6 +5,7 @@ saved_params/*
 
 # PyCharm
 .idea/
+.run/
 
 # MacOS
 .DS_Store
