@@ -18,8 +18,14 @@ import theano.tensor as T
 
 from lasagne.layers import batch_norm
 
+import os.path
+from os import path
+
 # Logging utilities - logs get saved in folder logs named by date and time, and also output
 # at standard output
+
+if not path.isdir('logs'):
+    os.mkdir('logs')
 
 logFormatter = logging.Formatter("[%(asctime)s]  %(message)s", datefmt='%m/%d %I:%M:%S')
 
@@ -127,9 +133,21 @@ class DCJC(object):
         for i, batch in enumerate(dataset.iterate_minibatches(self.input_type, batch_size, shuffle=False)):
             Z[i * batch_size:(i + 1) * batch_size] = self.predictEncoding(batch[0])
         # Save network params and latent space
-        np.save('saved_params/%s/z_%s.npy' % (dataset.name, self.name), Z)
-        # Borrowed from mnist lasagne example
-        np.savez('saved_params/%s/m_%s.npz' % (dataset.name, self.name), *lasagne.layers.get_all_param_values(self.network, trainable=True))
+
+        try:
+            try:
+                os.makedirs('saved_params/%s' % dataset.name)
+            except OSError:
+                pass
+
+            np.save('saved_params/%s/z_%s.npy' % (dataset.name, self.name), Z)
+            # Borrowed from mnist lasagne example
+            np.savez('saved_params/%s/m_%s.npz' % (dataset.name, self.name),
+                     *lasagne.layers.get_all_param_values(self.network, trainable=True))
+        except IOError:
+            np.save('z_%s.npy' % self.name, Z)
+            np.savez('m_%s.npz' % self.name,
+                     *lasagne.layers.get_all_param_values(self.network, trainable=True))
 
     def doClusteringWithKLdivLoss(self, dataset, combined_loss, epochs):
         '''
@@ -208,9 +226,21 @@ class DCJC(object):
         # Save the inputs in latent space and the network parameters
         for i, batch in enumerate(dataset.iterate_minibatches(self.input_type, batch_size, shuffle=False)):
             Z[i * batch_size:(i + 1) * batch_size] = self.predictEncoding(batch[0])
-        np.save('saved_params/%s/pc_z_%s.npy' % (dataset.name, self.name), Z)
-        np.savez('saved_params/%s/pc_m_%s.npz' % (dataset.name, self.name),
-                 *lasagne.layers.get_all_param_values(self.network, trainable=True))
+
+        try:
+            os.makedirs('saved_params/%s' % dataset.name)
+        except OSError:
+            pass
+
+        try:
+            np.save('saved_params/%s/pc_z_%s.npy' % (dataset.name, self.name), Z)
+            np.savez('saved_params/%s/pc_m_%s.npz' % (dataset.name, self.name),
+                     *lasagne.layers.get_all_param_values(self.network, trainable=True))
+
+        except IOError:
+            np.save('pc_z_%s.npy' % self.name, Z)
+            np.savez('pc_m_%s.npz' % self.name,
+                     *lasagne.layers.get_all_param_values(self.network, trainable=True))
 
     def calculateP(self, Q):
         # Function to calculate the desired distribution Q^2, for more details refer to DEC paper
@@ -283,9 +313,20 @@ class DCJC(object):
         # Save the inputs in latent space and the network parameters
         for i, batch in enumerate(dataset.iterate_minibatches(self.input_type, batch_size, shuffle=False)):
             Z[i * batch_size:(i + 1) * batch_size] = self.predictEncoding(batch[0])
-        np.save('saved_params/%s/pc_km_z_%s.npy' % (dataset.name, self.name), Z)
-        np.savez('saved_params/%s/pc_km_m_%s.npz' % (dataset.name, self.name),
+
+        try:
+            os.makedirs('saved_params/%s' % dataset.name)
+        except OSError:
+            pass
+
+        try:
+            np.save('saved_params/%s/pc_km_z_%s.npy' % (dataset.name, self.name), Z)
+            np.savez('saved_params/%s/pc_km_m_%s.npz' % (dataset.name, self.name),
                  *lasagne.layers.get_all_param_values(self.network, trainable=True))
+        except IOError:
+            np.save('pc_km_z_%s.npy' % self.name, Z)
+            np.savez('pc_km_m_%s.npz' % self.name,
+                     *lasagne.layers.get_all_param_values(self.network, trainable=True))
 
 
     def getKMeansLoss(self, latent_space_expression, soft_assignments, t_cluster_centers, num_clusters, latent_space_dim, num_samples, soft_loss=False):
