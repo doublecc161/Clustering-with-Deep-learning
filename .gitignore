@@ -1,4 +1,10 @@
 *.pyc
 outputs/*.png
 logs/*
+saved_params/*
+
+# PyCharm
 .idea/
+
+# MacOS
+.DS_Store
